@@ -25,7 +25,7 @@ function bindData(articles) {
         const cardClone = newsCardTemplate.contentEditable.cloneNode(true);
         fillDataInCard(cardClone, article);
         cardsContainer.appendChild(cardClone);
-    })
+    });
 }
 
 function fillDataInCard(cardClone, article) {
@@ -46,7 +46,7 @@ function fillDataInCard(cardClone, article) {
 
     cardClone.firstElementChild.addEventListener("click", () => {
         window.open(article.url, "_blank");
-    })
+    });
 }
 let curSelectedNav = null;
 function onNavItemClick(id) {
