@@ -1,5 +1,6 @@
 const API_KEY = "16845f8e8129480ea662d2297fa3c6cf";
-const url = "https://newsapi.org/v2/everything?q=";
+const url = "https://newsapi.org/v2/top-headlines?country=eg&apiKey=${API_KEY}";
+// const url = "https://newsapi.org/v2/everything?q=";
 
 window.addEventListener("load", () => fetchNews("Egypt"));
 
@@ -21,7 +22,7 @@ function bindData(articles) {
     cardsContainer.innerHTML = "";
 
     articles.forEach((article) => {
-        if(!article.urlToImage) return;
+        if (!article.urlToImage) return;
         const cardClone = newsCardTemplate.content.cloneNode(true);
         fillDataInCard(cardClone, article);
         cardsContainer.appendChild(cardClone);
@@ -62,7 +63,7 @@ const searchText = document.getElementById("search-text");
 
 searchButton.addEventListener("click", () => {
     const query = searchText.value;
-    if(!query) return;
+    if (!query) return;
     fetchNews(query);
     curSelectedNav?.classList.remove("active");
     curSelectedNav = null;
