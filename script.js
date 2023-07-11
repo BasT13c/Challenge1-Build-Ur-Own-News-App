@@ -4,7 +4,7 @@ const url = "https://newsapi.org/v2/everything?q=";
 window.addEventListener("load", () => fetchNews("Egypt"));
 
 function reload() {
-    window.location.reload;
+    window.location.reload();
 }
 
 async function fetchNews(query) {
