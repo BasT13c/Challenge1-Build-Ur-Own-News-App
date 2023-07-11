@@ -65,5 +65,6 @@ searchButton.addEventListener("click", () => {
     if(!query) return;
     fetchNews(query);
     curSelectedNav?.classList.remove("active");
-})
+    curSelectedNav = null;
+});
 
