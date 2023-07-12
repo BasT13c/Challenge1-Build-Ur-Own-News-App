@@ -26,6 +26,25 @@
                     <input id="search-text" type="text" class="news-input" placeholder="e.g. Science">
                     <button id="search-button" class="search-button">Search</button>
                 </div>
+                <div class="select-container">
+                    <label>Sort by:</label>
+                    <span class="select">
+                        <select id="sort-select">
+                            <option value="" disabled="disabled" selected="selected">Select sort category</option>
+                            <option value="date"> Date </option>
+                            <option value="source"> Source </option>
+                        </select>
+                        <svg>
+                            <use xlink:href="#select-arrow-down"></use>
+                        </svg>
+                    </span>
+                    <!-- SVG Sprites-->
+                    <svg class="sprites">
+                        <symbol id="select-arrow-down" viewbox="0 0 10 6">
+                        <polyline points="1 1 5 5 9 1"></polyline>
+                        </symbol>
+                    </svg>
+                </div>
             </div>
         </nav>
            

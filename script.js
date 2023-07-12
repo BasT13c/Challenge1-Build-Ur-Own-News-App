@@ -8,9 +8,13 @@ function reload() {
     window.location.reload();
 }
 
+let currentQuery = "Egypt";
+
 const cache = {};
 
 async function fetchNews(query) {
+    currentQuery = query;
+
     if (cache[query]) {
         bindData(cache[query]);
         return;
@@ -43,6 +47,14 @@ function bindData(articles) {
 
     // Sort articles by date
     const sortedArticles = sortArticles(articles, "date");
+
+    articles.forEach((article) => {
+        if (!article.urlToImage) return;
+        const cardClone = newsCardTemplate.content.cloneNode(true);
+        // console.log(cardClone);
+        fillDataInCard(cardClone, article);
+        cardsContainer.appendChild(cardClone);
+    });
 
     sortedArticles.forEach((article) => {
         if (!article.urlToImage) return;
@@ -77,7 +89,9 @@ function fillDataInCard(cardClone, article) {
         window.open(article.url, "_blank");
     });
 }
+
 let curSelectedNav = null;
+
 function onNavItemClick(id) {
     fetchNews(id);
     const navItem = document.getElementById(id);
@@ -108,5 +122,13 @@ searchButton.addEventListener("click", () => {
     fetchNews(query);
     curSelectedNav?.classList.remove("active");
     curSelectedNav = null;
+});
+
+const sortSelect = document.getElementById("sort-select");
+
+sortSelect.addEventListener("change", () => {
+    const criteria = sortSelect.value;
+    const sortedArticles = sortArticles(cache[currentQuery], criteria);
+    bindData(sortedArticles);
 });
 
