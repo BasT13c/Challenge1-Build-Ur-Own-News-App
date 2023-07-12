@@ -1,6 +1,6 @@
 const API_KEY = "16845f8e8129480ea662d2297fa3c6cf";
-const url = "https://newsapi.org/v2/top-headlines?country=eg&apiKey=${API_KEY}";
-// const url = "https://newsapi.org/v2/everything?q=";
+// const url = "https://newsapi.org/v2/top-headlines?country=eg&apiKey=${API_KEY}";
+const url = "https://newsapi.org/v2/everything?q=";
 
 window.addEventListener("load", () => fetchNews("Egypt"));
 
@@ -24,6 +24,7 @@ function bindData(articles) {
     articles.forEach((article) => {
         if (!article.urlToImage) return;
         const cardClone = newsCardTemplate.content.cloneNode(true);
+        // console.log(cardClone);
         fillDataInCard(cardClone, article);
         cardsContainer.appendChild(cardClone);
     });
@@ -31,9 +32,13 @@ function bindData(articles) {
 
 function fillDataInCard(cardClone, article) {
     const newsImg = cardClone.querySelector("#news-img");
+    // console.log(newsImg);
     const newsTitle = cardClone.querySelector("#news-title");
+    // console.log(newsTitle);
     const newsSource = cardClone.querySelector("#news-source");
+    // console.log(newsSource);
     const newsDesc = cardClone.querySelector("#news-desc");
+    // console.log(newsDesc);
 
     newsImg.src = article.urlToImage;
     newsTitle.innerHTML = article.title;
