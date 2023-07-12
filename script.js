@@ -23,13 +23,28 @@ async function fetchNews(query) {
     bindData(data.articles);
 }
 
+function sortArticles(articles, criteria) {
+    const sortedArticles = [...articles];
+    sortedArticles.sort((a, b) => {
+        if (criteria === "date") {
+            return new Date(b.publishedAt) - new Date(a.publishedAt);
+        } else if (criteria === "source") {
+            return a.source.name.localeCompare(b.source.name);
+        }
+    });
+    return sortedArticles;
+}
+
 function bindData(articles) {
     const cardsContainer = document.getElementById("cards-container");
     const newsCardTemplate = document.getElementById("template-news-card");
 
     cardsContainer.innerHTML = "";
 
-    articles.forEach((article) => {
+    // Sort articles by date
+    const sortedArticles = sortArticles(articles, "date");
+
+    sortedArticles.forEach((article) => {
         if (!article.urlToImage) return;
         const cardClone = newsCardTemplate.content.cloneNode(true);
         // console.log(cardClone);
