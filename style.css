@@ -264,18 +264,34 @@ main {
 }
 
 .bookmark-tab {
+    display: inline-block;
     position: relative;
 }
 
+.bookmark-tab button {
+    background-color: rgb(255, 123, 0);
+    color: white;
+    padding: 8px 24px;
+    border: none;
+    border-radius: 4px;
+    font-family: "Roboto", sans-serif;
+    cursor: pointer;
+}
+
 .bookmark-list {
-    position: absolute;
+    position: fixed;
     top: 100%;
     left: 0;
     right: 0;
     z-index: 999;
+    transform: translateX(-50%);
     background-color: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     display: none;
+    width: calc(100vw - 70%) ;
+    max-height: 300px;
+    overflow-y: auto;
 }
 
 .bookmark-list.open {
@@ -284,6 +300,7 @@ main {
 
 .bookmark-tab:hover .bookmark-list {
     display: block;
+    transform: translateX(1%);
 }
 
 .bookmark-list button {
@@ -298,4 +315,25 @@ main {
 
 .bookmark-list button:hover {
     background-color: #f3f3f3;
+}
+
+.accordion {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+}
+
+.accordion button:last-child {
+    background-color: rgb(199, 73, 0);
+    color: white;
+    border-radius: 4px;
+    padding: 8px 16px;
+    width: 80px;
+    order: -1;
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
 }

@@ -27,9 +27,16 @@ async function fetchNews(query, sortBy) {
     const data = await res.json();
     cache[query] = data.articles;
     bindData(data.articles);
+
+    sortSelect.value = "";
 }
 
 function sortArticles(articles, criteria) {
+    if (!criteria || criteria == "none") {
+        // If no sort criteria is selected, return the original list of articles unchanged
+        return articles;
+    }
+
     const sortedArticles = [...articles];
     sortedArticles.sort((a, b) => {
         if (criteria === "date") {
@@ -121,6 +128,8 @@ function onNavItemClick(id) {
     curSelectedNav?.classList.remove("active");
     curSelectedNav = navItem;
     curSelectedNav.classList.add("active");
+
+    sortSelect.value = "";
 }
 
 let debounceTimeout;
@@ -148,14 +157,14 @@ searchButton.addEventListener("click", () => {
     fetchNews(query, sortBy);
     curSelectedNav?.classList.remove("active");
     curSelectedNav = null;
+
+    sortSelect.value = "";
 });
 
 sortSelect.addEventListener("change", () => {
     const sortBy = sortSelect.value;
     fetchNews(currentQuery, sortBy);
 });
-
- 
 
 function displayBookmarks() {
     // Get the bookmarked articles from local storage
@@ -205,3 +214,4 @@ bookmarkButton.addEventListener("click", () => {
     bookmarkList.style.left = `${rect.left}px`;
     bookmarkList.classList.toggle("open");
 });
+
