@@ -1,7 +1,11 @@
 const API_KEY = "16845f8e8129480ea662d2297fa3c6cf";
 const url = "https://newsapi.org/v2/everything?q=";
 
-window.addEventListener("load", () => fetchNews("Egypt"));
+window.addEventListener("load", () => {
+    fetchNews("Egypt");
+    displayBookmarks();
+});
+
 
 function reload() {
     window.location.reload();
@@ -83,21 +87,30 @@ function fillDataInCard(cardClone, article) {
 
     // Add an event listener to the bookmark checkbox
     bookmarkCheckbox.addEventListener("change", () => {
-        if (bookmarkCheckbox.checked) {
-            // Save the article to the list of bookmarked articles
-            const bookmarks = JSON.parse(localStorage.getItem("bookmarks")) || [];
+    // Get the current list of bookmarks from local storage
+    const bookmarks = JSON.parse(localStorage.getItem("bookmarks")) || [];
+
+    if (bookmarkCheckbox.checked) {
+        // Check if the article is already in the list of bookmarks
+        const index = bookmarks.findIndex((bookmark) => bookmark.title === article.title);
+        if (index === -1) {
+            // If the article is not already in the list of bookmarks, add it
             bookmarks.push(article);
             localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
-        } else {
-            // Remove the article from the list of bookmarked articles
-            const bookmarks = JSON.parse(localStorage.getItem("bookmarks")) || [];
-            const index = bookmarks.findIndex((bookmark) => bookmark.title === article.title);
-            if (index !== -1) {
-                bookmarks.splice(index, 1);
-                localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
-            }
         }
-    });
+    } else {
+        // Remove the article from the list of bookmarked articles
+        const index = bookmarks.findIndex((bookmark) => bookmark.title === article.title);
+        if (index !== -1) {
+            bookmarks.splice(index, 1);
+            localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+        }
+    }
+
+    // Update the displayed list of bookmarks
+    displayBookmarks();
+});
+
 }
 
 let curSelectedNav = null;
@@ -142,15 +155,53 @@ sortSelect.addEventListener("change", () => {
     fetchNews(currentQuery, sortBy);
 });
 
-  
-// Select the input box
-var siteName = document.querySelector("[name='site_name']");
-// var url = document.querySelector("[name='url']");
-  
-// Select the <div> with class="bookmarks"
-var bookmarksSection = document.querySelector(".bookmarks");
-  
-// Hold bookmarks in local storage
-if(typeof(localStorage.bookmark) == "undefined"){
-  localStorage.bookmark = "";
+ 
+
+function displayBookmarks() {
+    // Get the bookmarked articles from local storage
+    const bookmarks = JSON.parse(localStorage.getItem("bookmarks")) || [];
+
+    // Get the bookmarks list element
+    const bookmarksList = document.querySelector(".bookmark-list");
+
+    // Clear the bookmarks list
+    bookmarksList.innerHTML = "";
+
+    // Create an accordion for each bookmarked article
+    for (const bookmark of bookmarks) {
+        const accordion = document.createElement("div");
+        accordion.classList.add("accordion");
+
+        const title = document.createElement("button");
+        title.textContent = bookmark.title;
+        title.addEventListener("click", () => {
+            window.open(bookmark.url, "_blank");
+        });
+        accordion.appendChild(title);
+
+        const deleteButton = document.createElement("button");
+        deleteButton.textContent = "Delete";
+        deleteButton.addEventListener("click", () => {
+            // Remove the article from the list of bookmarked articles
+            const index = bookmarks.findIndex((b) => b.title === bookmark.title);
+            if (index !== -1) {
+                bookmarks.splice(index, 1);
+                localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+                displayBookmarks();
+            }
+        });
+        accordion.appendChild(deleteButton);
+
+        bookmarksList.appendChild(accordion);
+    }
 }
+
+const bookmarkList = document.querySelector(".bookmark-list");
+const bookmarkButton = document.querySelector(".bookmark-tab button");
+
+bookmarkButton.addEventListener("click", () => {
+    const rect = bookmarkButton.getBoundingClientRect();
+    bookmarkList.style.top = `${rect.bottom}px`;
+    bookmarkList.style.left = `${rect.left}px`;
+    bookmarkList.classList.toggle("open");
+});

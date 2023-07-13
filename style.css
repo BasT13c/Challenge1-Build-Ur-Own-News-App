@@ -262,3 +262,40 @@ main {
     }
   }
 }
+
+.bookmark-tab {
+    position: relative;
+}
+
+.bookmark-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 999;
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: none;
+}
+
+.bookmark-list.open {
+    display: block;
+}
+
+.bookmark-tab:hover .bookmark-list {
+    display: block;
+}
+
+.bookmark-list button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 8px 16px;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+}
+
+.bookmark-list button:hover {
+    background-color: #f3f3f3;
+}
