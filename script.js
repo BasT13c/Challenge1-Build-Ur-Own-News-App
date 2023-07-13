@@ -11,7 +11,7 @@ let currentQuery = "Egypt";
 
 const cache = {};
 
-async function fetchNews(query) {
+async function fetchNews(query, sortBy) {
     currentQuery = query;
 
     if (cache[query]) {
@@ -19,45 +19,11 @@ async function fetchNews(query) {
         return;
     }
 
-    const res = await fetch(`${url}${query}&apiKey=${API_KEY}`);
+    const res = await fetch(`${url}${query}&sortBy=${sortBy}&apiKey=${API_KEY}`);
     const data = await res.json();
-    // Add a relevancy score to each article based on its position in the results
-    data.articles.forEach((article, index) => {
-        article.relevancyScore = data.articles.length - index;
-    });
-    // Get the popularity scores of the sources
-    const sources = [...new Set(data.articles.map((article) => article.source))];
-    const sourcesPopularity = await getPopularityScores(sources);
-    // Add a popularity score to each article based on its source's popularity
-    data.articles.forEach((article) => {
-        article.popularityScore = sourcesPopularity[article.source.name] || 0;
-    });
     cache[query] = data.articles;
     bindData(data.articles);
 }
-
-async function getPopularityScores(sources) {
-    const sourcesPopularity = {};
-    const corsProxy = "https://cors-anywhere.herokuapp.com/";
-    for (const source of sources) {
-        if (!source.url) continue;
-        const url = `${corsProxy}https://www.alexa.com/siteinfo/${source.url}`;
-        const res = await fetch(url);
-        const data = await res.text();
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(data, "text/html");
-        const rankElement = doc.querySelector(".rankmini-rank");
-        if (rankElement) {
-            const rankText = rankElement.textContent.trim();
-            const rank = parseInt(rankText.replace(/,/g, ""));
-            if (!isNaN(rank)) {
-                sourcesPopularity[source.name] = 1 / rank;
-            }
-        }
-    }
-    return sourcesPopularity;
-}
-
 
 function sortArticles(articles, criteria) {
     const sortedArticles = [...articles];
@@ -81,7 +47,11 @@ function bindData(articles) {
 
     cardsContainer.innerHTML = "";
 
-    articles.forEach((article) => {
+    // Sort articles before displaying them
+    const sortBy = sortSelect.value;
+    const sortedArticles = sortArticles(articles, sortBy);
+
+    sortedArticles.forEach((article) => {
         if (!article.urlToImage) return;
         const cardClone = newsCardTemplate.content.cloneNode(true);
         fillDataInCard(cardClone, article);
@@ -108,6 +78,26 @@ function fillDataInCard(cardClone, article) {
     cardClone.firstElementChild.addEventListener("click", () => {
         window.open(article.url, "_blank");
     });
+
+    const bookmarkCheckbox = cardClone.querySelector("#bookmark");
+
+    // Add an event listener to the bookmark checkbox
+    bookmarkCheckbox.addEventListener("change", () => {
+        if (bookmarkCheckbox.checked) {
+            // Save the article to the list of bookmarked articles
+            const bookmarks = JSON.parse(localStorage.getItem("bookmarks")) || [];
+            bookmarks.push(article);
+            localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+        } else {
+            // Remove the article from the list of bookmarked articles
+            const bookmarks = JSON.parse(localStorage.getItem("bookmarks")) || [];
+            const index = bookmarks.findIndex((bookmark) => bookmark.title === article.title);
+            if (index !== -1) {
+                bookmarks.splice(index, 1);
+                localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+            }
+        }
+    });
 }
 
 let curSelectedNav = null;
@@ -123,32 +113,44 @@ function onNavItemClick(id) {
 let debounceTimeout;
 const searchButton = document.getElementById("search-button");
 const searchText = document.getElementById("search-text");
+const sortSelect = document.getElementById("sort-select");
 
-searchText.addEventListener("input", () => {
-    clearTimeout(debounceTimeout);
-    debounceTimeout = setTimeout(() => {
-        const query = searchText.value;
-        if (!query) return;
-        fetchNews(query);
-        curSelectedNav?.classList.remove("active");
-        curSelectedNav = null;
-    }, 300);
-});
+// searchText.addEventListener("input", () => {
+//     clearTimeout(debounceTimeout);
+//     debounceTimeout = setTimeout(() => {
+//         const query = searchText.value;
+//         if (!query) return;
+//         const sortBy = sortSelect.value;
+//         fetchNews(query, sortBy);
+//         curSelectedNav?.classList.remove("active");
+//         curSelectedNav = null;
+//     }, 300);
+// });
 
 searchButton.addEventListener("click", () => {
     clearTimeout(debounceTimeout);
     const query = searchText.value;
     if (!query) return;
-    fetchNews(query);
+    const sortBy = sortSelect.value;
+    fetchNews(query, sortBy);
     curSelectedNav?.classList.remove("active");
     curSelectedNav = null;
 });
 
-const sortSelect = document.getElementById("sort-select");
-
 sortSelect.addEventListener("change", () => {
-    const criteria = sortSelect.value;
-    const sortedArticles = sortArticles(cache[currentQuery], criteria);
-    bindData(sortedArticles);
+    const sortBy = sortSelect.value;
+    fetchNews(currentQuery, sortBy);
 });
 
+  
+// Select the input box
+var siteName = document.querySelector("[name='site_name']");
+// var url = document.querySelector("[name='url']");
+  
+// Select the <div> with class="bookmarks"
+var bookmarksSection = document.querySelector(".bookmarks");
+  
+// Hold bookmarks in local storage
+if(typeof(localStorage.bookmark) == "undefined"){
+  localStorage.bookmark = "";
+}
