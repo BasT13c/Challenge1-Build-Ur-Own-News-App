@@ -1,5 +1,4 @@
 const API_KEY = "16845f8e8129480ea662d2297fa3c6cf";
-// const url = "https://newsapi.org/v2/top-headlines?country=eg&apiKey=${API_KEY}";
 const url = "https://newsapi.org/v2/everything?q=";
 
 window.addEventListener("load", () => fetchNews("Egypt"));
@@ -22,10 +21,43 @@ async function fetchNews(query) {
 
     const res = await fetch(`${url}${query}&apiKey=${API_KEY}`);
     const data = await res.json();
+    // Add a relevancy score to each article based on its position in the results
+    data.articles.forEach((article, index) => {
+        article.relevancyScore = data.articles.length - index;
+    });
+    // Get the popularity scores of the sources
+    const sources = [...new Set(data.articles.map((article) => article.source))];
+    const sourcesPopularity = await getPopularityScores(sources);
+    // Add a popularity score to each article based on its source's popularity
+    data.articles.forEach((article) => {
+        article.popularityScore = sourcesPopularity[article.source.name] || 0;
+    });
     cache[query] = data.articles;
-    // console.log(data);
     bindData(data.articles);
 }
+
+async function getPopularityScores(sources) {
+    const sourcesPopularity = {};
+    const corsProxy = "https://cors-anywhere.herokuapp.com/";
+    for (const source of sources) {
+        if (!source.url) continue;
+        const url = `${corsProxy}https://www.alexa.com/siteinfo/${source.url}`;
+        const res = await fetch(url);
+        const data = await res.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(data, "text/html");
+        const rankElement = doc.querySelector(".rankmini-rank");
+        if (rankElement) {
+            const rankText = rankElement.textContent.trim();
+            const rank = parseInt(rankText.replace(/,/g, ""));
+            if (!isNaN(rank)) {
+                sourcesPopularity[source.name] = 1 / rank;
+            }
+        }
+    }
+    return sourcesPopularity;
+}
+
 
 function sortArticles(articles, criteria) {
     const sortedArticles = [...articles];
@@ -34,6 +66,10 @@ function sortArticles(articles, criteria) {
             return new Date(b.publishedAt) - new Date(a.publishedAt);
         } else if (criteria === "source") {
             return a.source.name.localeCompare(b.source.name);
+        } else if (criteria === "relevancy") {
+            return b.relevancyScore - a.relevancyScore;
+        } else if (criteria === "popularity") {
+            return b.popularityScore - a.popularityScore;
         }
     });
     return sortedArticles;
@@ -45,21 +81,9 @@ function bindData(articles) {
 
     cardsContainer.innerHTML = "";
 
-    // Sort articles by date
-    const sortedArticles = sortArticles(articles, "date");
-
     articles.forEach((article) => {
         if (!article.urlToImage) return;
         const cardClone = newsCardTemplate.content.cloneNode(true);
-        // console.log(cardClone);
-        fillDataInCard(cardClone, article);
-        cardsContainer.appendChild(cardClone);
-    });
-
-    sortedArticles.forEach((article) => {
-        if (!article.urlToImage) return;
-        const cardClone = newsCardTemplate.content.cloneNode(true);
-        // console.log(cardClone);
         fillDataInCard(cardClone, article);
         cardsContainer.appendChild(cardClone);
     });
@@ -67,13 +91,9 @@ function bindData(articles) {
 
 function fillDataInCard(cardClone, article) {
     const newsImg = cardClone.querySelector("#news-img");
-    // console.log(newsImg);
     const newsTitle = cardClone.querySelector("#news-title");
-    // console.log(newsTitle);
     const newsSource = cardClone.querySelector("#news-source");
-    // console.log(newsSource);
     const newsDesc = cardClone.querySelector("#news-desc");
-    // console.log(newsDesc);
 
     newsImg.src = article.urlToImage;
     newsTitle.innerHTML = article.title;
